@@ -1,5 +1,5 @@
 # SMART CLINIC
-An AI-powered real-time patient queue optimization platform that dynamically schedules consultations to reduce waiting time and maximize clinic efficiency.
+It is an queue optimization platform that dynamically schedules consultations to reduce waiting time and maximize clinic efficiency.
 
 # 1. Problem Statement
  # Problem Title
