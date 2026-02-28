@@ -40,7 +40,7 @@ There is a need for a smarter system that dynamically manages patient queues in 
 
 6.Patients waiting for consultation
 
-# exissting gaps
+# existing gaps
 
 1.Most clinics follow static queue systems.
 
