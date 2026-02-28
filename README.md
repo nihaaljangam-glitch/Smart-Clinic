@@ -28,17 +28,17 @@ There is a need for a smarter system that dynamically manages patient queues in 
 
  # Target Users
 
-1. Private clinics
+1.Private clinics
 
-2. Hospitals
+2.Hospitals
 
 3.Diagnostic centers
 
 4.Medical reception staff
 
-5. Doctors managing high patient flow
+5.Doctors managing high patient flow
 
-6 .Patients waiting for consultation
+6.Patients waiting for consultation
 
 # exissting gaps
 
