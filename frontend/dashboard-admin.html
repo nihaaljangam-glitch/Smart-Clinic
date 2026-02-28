@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — Smart Clinic</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .logout-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <header id="app-header">
+        <div class="header-brand">
+            <span class="logo-icon">🏥</span>
+            <div>
+                <h1>Smart Clinic <span class="badge badge-priority"
+                        style="vertical-align: middle; margin-left: 8px;">ADMIN</span></h1>
+                <p class="subtitle">Real-Time Queue Optimization</p>
+            </div>
+        </div>
+
+        <div class="header-stats">
+            <div id="stat-patients" class="stat-chip">
+                <span class="stat-value">0</span>
+                <span class="stat-label">Patients</span>
+            </div>
+            <div id="stat-staff" class="stat-chip">
+                <span class="stat-value">0</span>
+                <span class="stat-label">Staff</span>
+            </div>
+            <div id="stat-queue" class="stat-chip accent">
+                <span class="stat-value">0</span>
+                <span class="stat-label">In Queue</span>
+            </div>
+            <div id="stat-wait" class="stat-chip">
+                <span class="stat-value">0m</span>
+                <span class="stat-label">Avg Wait</span>
+            </div>
+            <button class="btn logout-btn" onclick="Auth.logout()" style="margin-left: 15px;">Logout</button>
+        </div>
+    </header>
+
+    <main id="app-main">
+        <!-- Sidebar: Global Optimized Queue -->
+        <section id="queue-panel" class="panel">
+            <div class="panel-header">
+                <h2>⚡ Priority Queue</h2>
+                <button class="btn btn-sm btn-accent" onclick="optimizeQueue()">Optimize</button>
+            </div>
+            <div id="queue-list" class="panel-body">
+                <div class="empty-state">Loading queue...</div>
+            </div>
+        </section>
+
+        <!-- Center: Patient Management -->
+        <section id="patient-panel" class="panel">
+            <div class="panel-header">
+                <h2>👥 Patients</h2>
+                <button class="btn btn-sm btn-primary" onclick="toggleForm('patient-form')">+ Add</button>
+            </div>
+
+            <form id="patient-form" class="add-form" onsubmit="addPatient(event)">
+                <input type="text" id="p-name" placeholder="Patient Name" required>
+                <div class="time-row">
+                    <select id="p-visit-type" style="flex: 1;">
+                        <option value="regular">Regular</option>
+                        <option value="emergency">Emergency</option>
+                        <option value="follow_up">Follow Up</option>
+                    </select>
+                    <input type="number" id="p-priority" placeholder="Priority (1-5)" min="1" max="5" value="3"
+                        style="width: 80px;">
+                </div>
+                <input type="number" id="p-time" placeholder="Est. Service Time (min)" value="15" required>
+                <button type="submit" class="btn btn-primary">Add Patient</button>
+            </form>
+
+            <div id="patient-list" class="panel-body">
+                <div class="empty-state">Loading patients...</div>
+            </div>
+        </section>
+
+        <!-- Right: Staff & Resources -->
+        <section id="staff-panel" class="panel">
+            <div class="panel-header">
+                <h2>🩺 Staff</h2>
+                <button class="btn btn-sm btn-primary" onclick="toggleForm('staff-form')">+ Add</button>
+            </div>
+
+            <form id="staff-form" class="add-form" onsubmit="addStaff(event)">
+                <input type="text" id="s-name" placeholder="Doctor Name" required>
+                <div class="time-row">
+                    <input type="time" id="s-start" value="00:00" required>
+                    <span>to</span>
+                    <input type="time" id="s-end" value="23:59" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Staff</button>
+            </form>
+
+            <div id="staff-list" class="panel-body">
+                <div class="empty-state">Loading staff...</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>📎 Patient Documents</h3>
+                <button class="btn-close" onclick="closeUploadModal()">×</button>
+            </div>
+
+            <input type="hidden" id="upload-user-id">
+            <div class="drop-zone" id="drop-zone">
+                <p>Click or drag file to upload</p>
+                <p class="small">Max 10MB: PDF, DOC, Images</p>
+                <input type="file" id="file-input" style="display: none;">
+            </div>
+            <div id="file-name-display" class="file-name-display"></div>
+            <button class="btn btn-primary" style="width: 100%;" id="btn-upload" onclick="uploadFile(event)"
+                disabled>Upload File</button>
+
+            <div id="user-files-list" class="user-files-list">
+                <!-- Files loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script src="auth.js"></script>
+    <script src="common.js"></script>
+    <script src="admin.js"></script>
+</body>
+
+</html>

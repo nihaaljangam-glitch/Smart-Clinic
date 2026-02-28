@@ -1,16 +1,15 @@
 /**
- * script.js — Smart Clinic Frontend
- *
- * All API integration for the dashboard.
- * Auto-refreshes every 5 seconds.
+ * frontend/admin.js — Admin Dashboard Logic
  */
 
-const API = 'http://localhost:3000';
-
-// ─── Auto-Refresh ────────────────────────────────────────────
 let refreshInterval;
 
 document.addEventListener('DOMContentLoaded', () => {
+    if (Auth.getUser()?.role !== 'admin') {
+        Auth.redirectToDashboard(Auth.getUser()?.role);
+        return;
+    }
+
     refreshAll();
     refreshInterval = setInterval(refreshAll, 5000);
     setupDropZone();
@@ -25,13 +24,9 @@ async function refreshAll() {
     ]);
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  STATS
-// ═══════════════════════════════════════════════════════════════
-
 async function loadStats() {
     try {
-        const res = await fetch(`${API}/stats`);
+        const res = await apiFetch('/stats');
         const data = await res.json();
 
         document.querySelector('#stat-patients .stat-value').textContent = data.total_users;
@@ -43,18 +38,12 @@ async function loadStats() {
     }
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  QUEUE
-// ═══════════════════════════════════════════════════════════════
-
 async function loadQueue() {
     try {
-        const res = await fetch(`${API}/users`);
+        const res = await apiFetch('/users');
         const data = await res.json();
-
         const container = document.getElementById('queue-list');
 
-        // Filter to active users and sort by score
         const active = data.users
             .filter(u => ['waiting', 'scheduled'].includes(u.status))
             .sort((a, b) => b.score - a.score);
@@ -79,13 +68,9 @@ async function loadQueue() {
     }
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  PATIENTS
-// ═══════════════════════════════════════════════════════════════
-
 async function loadPatients() {
     try {
-        const res = await fetch(`${API}/users`);
+        const res = await apiFetch('/users');
         const data = await res.json();
         const container = document.getElementById('patient-list');
 
@@ -95,7 +80,7 @@ async function loadPatients() {
         }
 
         container.innerHTML = data.users.map(u => {
-            const id = u._id;   // MongoDB ObjectId
+            const id = u._id;
             const isActive = ['waiting', 'scheduled'].includes(u.status);
             return `
             <div class="patient-card">
@@ -112,7 +97,7 @@ async function loadPatients() {
                 <div class="patient-actions">
                     ${isActive && !u.assigned_staff_id ? `<button class="btn btn-sm btn-success" onclick="schedulePatient('${id}')">Schedule</button>` : ''}
                     ${isActive ? `<button class="btn btn-sm btn-danger" onclick="cancelPatient('${id}')">Cancel</button>` : ''}
-                    ${isActive ? `<button class="btn btn-sm btn-warning" onclick="noShowPatient('${id}')">No-Show</button>` : ''}
+                    ${isActive ? `<button class="btn btn-sm btn-warning" onclick="noShowPatient('${id}')" title="Mark as No-Show">No-Show</button>` : ''}
                     ${isActive ? `<button class="btn btn-sm btn-danger" onclick="emergencyOverride('${id}')" style="background:#b91c1c">🚨 Emergency</button>` : ''}
                     <button class="btn btn-sm btn-info" onclick="openUploadModal('${id}')">📎 Files</button>
                 </div>
@@ -131,9 +116,8 @@ async function addPatient(e) {
     const estimated_service_time = parseInt(document.getElementById('p-time').value);
 
     try {
-        const res = await fetch(`${API}/users`, {
+        const res = await apiFetch('/users', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, visit_type, priority_level, estimated_service_time }),
         });
         const data = await res.json();
@@ -150,7 +134,7 @@ async function addPatient(e) {
 
 async function schedulePatient(userId) {
     try {
-        const res = await fetch(`${API}/service/schedule/${userId}`, { method: 'POST' });
+        const res = await apiFetch(`/service/schedule/${userId}`, { method: 'POST' });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         toast(data.message, 'success');
@@ -162,7 +146,7 @@ async function schedulePatient(userId) {
 
 async function cancelPatient(userId) {
     try {
-        const res = await fetch(`${API}/cancel/${userId}`, { method: 'POST' });
+        const res = await apiFetch(`/cancel/${userId}`, { method: 'POST' });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         toast('Patient cancelled', 'info');
@@ -174,7 +158,7 @@ async function cancelPatient(userId) {
 
 async function noShowPatient(userId) {
     try {
-        const res = await fetch(`${API}/no-show/${userId}`, { method: 'POST' });
+        const res = await apiFetch(`/no-show/${userId}`, { method: 'POST' });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         toast('Patient marked as no-show', 'info');
@@ -186,7 +170,7 @@ async function noShowPatient(userId) {
 
 async function emergencyOverride(userId) {
     try {
-        const res = await fetch(`${API}/emergency/${userId}`, { method: 'POST' });
+        const res = await apiFetch(`/emergency/${userId}`, { method: 'POST' });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         toast(data.message, 'error');
@@ -196,13 +180,9 @@ async function emergencyOverride(userId) {
     }
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  STAFF
-// ═══════════════════════════════════════════════════════════════
-
 async function loadStaff() {
     try {
-        const res = await fetch(`${API}/staff`);
+        const res = await apiFetch('/staff');
         const data = await res.json();
         const container = document.getElementById('staff-list');
 
@@ -211,12 +191,11 @@ async function loadStaff() {
             return;
         }
 
-        // For each staff, fetch their queue status
         const staffHtml = await Promise.all(data.staff.map(async (s) => {
-            const staffId = s._id;   // MongoDB ObjectId
+            const staffId = s._id;
             let queueDetails = [];
             try {
-                const qRes = await fetch(`${API}/queue/status/${staffId}`);
+                const qRes = await apiFetch(`/queue/status/${staffId}`);
                 const qData = await qRes.json();
                 queueDetails = qData.queue_details || [];
             } catch (_) { }
@@ -253,9 +232,8 @@ async function addStaff(e) {
     const end_time = document.getElementById('s-end').value;
 
     try {
-        const res = await fetch(`${API}/staff`, {
+        const res = await apiFetch('/staff', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, start_time, end_time }),
         });
         const data = await res.json();
@@ -270,13 +248,9 @@ async function addStaff(e) {
     }
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  OPTIMIZE
-// ═══════════════════════════════════════════════════════════════
-
 async function optimizeQueue() {
     try {
-        const res = await fetch(`${API}/queue/optimize`, { method: 'POST' });
+        const res = await apiFetch('/queue/optimize', { method: 'POST' });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         toast(`Queue optimized — ${data.queue_length} entries rebalanced`, 'success');
@@ -286,9 +260,7 @@ async function optimizeQueue() {
     }
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  FILE UPLOAD
-// ═══════════════════════════════════════════════════════════════
+// ─── FILE UPLOAD (Admin can manage all) ───────────────────────
 
 function openUploadModal(userId) {
     document.getElementById('upload-user-id').value = userId;
@@ -310,28 +282,20 @@ function closeModal(e) {
 function setupDropZone() {
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
+    if (!dropZone) return;
 
-    dropZone.addEventListener('click', () => fileInput.click());
-
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.classList.add('drag-over');
-    });
-
-    dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('drag-over');
-    });
-
-    dropZone.addEventListener('drop', (e) => {
+    dropZone.onclick = () => fileInput.click();
+    dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); };
+    dropZone.ondragleave = () => dropZone.classList.remove('drag-over');
+    dropZone.ondrop = (e) => {
         e.preventDefault();
         dropZone.classList.remove('drag-over');
         if (e.dataTransfer.files.length) {
             fileInput.files = e.dataTransfer.files;
             onFileSelected();
         }
-    });
-
-    fileInput.addEventListener('change', onFileSelected);
+    };
+    fileInput.onchange = onFileSelected;
 }
 
 function onFileSelected() {
@@ -346,27 +310,24 @@ async function uploadFile(e) {
     e.preventDefault();
     const userId = document.getElementById('upload-user-id').value;
     const fileInput = document.getElementById('file-input');
-
-    if (!fileInput.files.length) {
-        toast('Please select a file', 'error');
-        return;
-    }
+    if (!fileInput.files.length) return;
 
     const formData = new FormData();
     formData.append('file', fileInput.files[0]);
 
     try {
+        // Raw fetch as FormData shouldn't have JSON content-type
         const res = await fetch(`${API}/upload/${userId}`, {
             method: 'POST',
+            headers: { 'Authorization': `Bearer ${Auth.getToken()}` },
             body: formData,
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
 
-        toast(`File "${data.file.filename}" uploaded`, 'success');
+        toast(`File uploaded`, 'success');
         fileInput.value = '';
         document.getElementById('file-name-display').textContent = '';
-        document.getElementById('btn-upload').disabled = true;
         loadUserFiles(userId);
     } catch (err) {
         toast(err.message, 'error');
@@ -376,14 +337,12 @@ async function uploadFile(e) {
 async function loadUserFiles(userId) {
     const container = document.getElementById('user-files-list');
     try {
-        const res = await fetch(`${API}/files/${userId}`);
+        const res = await apiFetch(`/files/${userId}`);
         const data = await res.json();
-
         if (!data.files || data.files.length === 0) {
             container.innerHTML = '<h4>No files uploaded yet</h4>';
             return;
         }
-
         container.innerHTML = `
             <h4>Uploaded Files (${data.files.length})</h4>
             ${data.files.map(f => `
@@ -396,28 +355,4 @@ async function loadUserFiles(userId) {
     } catch (err) {
         container.innerHTML = '<h4>Failed to load files</h4>';
     }
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  UTILITIES
-// ═══════════════════════════════════════════════════════════════
-
-function toggleForm(formId) {
-    const form = document.getElementById(formId);
-    form.classList.toggle('show');
-}
-
-function toast(message, type = 'info') {
-    const container = document.getElementById('toast-container');
-    const el = document.createElement('div');
-    el.className = `toast toast-${type}`;
-    el.textContent = message;
-    container.appendChild(el);
-    setTimeout(() => el.remove(), 3000);
-}
-
-function escHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
 }

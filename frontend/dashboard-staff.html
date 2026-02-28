@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard — Smart Clinic</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        #app-main {
+            grid-template-columns: 1fr 340px;
+        }
+
+        .staff-header-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .patient-big-card {
+            background: var(--bg-card-hover);
+            padding: 24px;
+            border-radius: var(--radius);
+            border-left: 5px solid var(--success);
+            margin-bottom: 20px;
+        }
+
+        .serving-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .serving-meta {
+            margin: 10px 0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .serving-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .logout-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <header id="app-header">
+        <div class="header-brand">
+            <span class="logo-icon">🩺</span>
+            <div>
+                <h1 id="doctor-name">Doctor Dashboard</h1>
+                <p class="subtitle">Managing your patient queue</p>
+            </div>
+        </div>
+
+        <div class="header-stats">
+            <div class="stat-chip accent">
+                <span id="stat-my-queue" class="stat-value">0</span>
+                <span class="stat-label">My Patients</span>
+            </div>
+            <div class="stat-chip">
+                <span id="stat-workload" class="stat-value">0m</span>
+                <span class="stat-label">Total Load</span>
+            </div>
+            <button class="btn logout-btn" onclick="Auth.logout()" style="margin-left: 15px;">Logout</button>
+        </div>
+    </header>
+
+    <main id="app-main">
+        <!-- Center: Current & Upcoming Patients -->
+        <section id="my-patients" class="panel">
+            <div class="panel-header">
+                <h2>📋 My Patient Queue</h2>
+            </div>
+            <div id="serving-container" style="padding: 15px; border-bottom: 1px solid var(--border); display: none;">
+                <!-- Currently serving patient -->
+            </div>
+            <div id="patient-queue-list" class="panel-body">
+                <div class="empty-state">No patients in your queue.</div>
+            </div>
+        </section>
+
+        <!-- Right: My Info & Performance -->
+        <section id="staff-info-panel" class="panel">
+            <div class="panel-header">
+                <h2>🩺 My Profile</h2>
+            </div>
+            <div class="panel-body" style="padding: 20px;">
+                <div id="profile-card">
+                    <p style="color: var(--text-secondary); margin-bottom: 15px;">You are currently active and receiving
+                        patients based on optimization scores.</p>
+                    <div class="stat-chip"
+                        style="width: 100%; margin-bottom: 15px; align-items: flex-start; padding: 15px;">
+                        <span class="stat-label">Working Hours</span>
+                        <span id="work-hours" class="stat-value" style="font-size: 1.1rem;">--:-- to --:--</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Upload/Files Modal -->
+    <div id="upload-modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Patient Documents</h3>
+                <button class="btn-close" onclick="closeUploadModal()">×</button>
+            </div>
+            <div id="user-files-list" class="user-files-list" style="border: none; padding-top: 0;">
+                <!-- Files loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script src="auth.js"></script>
+    <script src="common.js"></script>
+    <script src="staff.js"></script>
+</body>
+
+</html>
