@@ -28,17 +28,17 @@ There is a need for a smarter system that dynamically manages patient queues in 
 
  # Target Users
 
-1. Private clinics
+1.Private clinics
 
-2. Hospitals
+2.Hospitals
 
 3.Diagnostic centers
 
 4.Medical reception staff
 
-5. Doctors managing high patient flow
+5.Doctors managing high patient flow
 
-6 .Patients waiting for consultation
+6.Patients waiting for consultation
 
 # exissting gaps
 
@@ -151,8 +151,8 @@ https://www.researchgate.net/publication/371131312/figure/fig1/AS%3A114312811625
 Synthetic Clinic Consultation Dataset
 
 # Source
-Hugging Face ,a kaggle
-Data Type
+Hugging Face ,a kaggle,
+Data Type,
 Structured tabular dataset (CSV)
 
 # Selection Reason
