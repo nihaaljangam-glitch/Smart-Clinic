@@ -175,7 +175,6 @@ Feature engineering (arrival delay, doctor workload)
 
 # 7.⁠ ⁠Model Selected
 # Model Name
-Gradient Boosting Regressor (Consultation Time Prediction)
 
 Selection Reasoning
 
