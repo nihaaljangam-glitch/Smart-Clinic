@@ -195,36 +195,14 @@ Neural Networks (rejected due to small dataset)
 
 Evaluation Metrics
 
-# 7.⁠ ⁠Model Selected
-# Model Name
-Gradient Boosting Regressor (Consultation Time Prediction)
+# 8.⁠ ⁠Technology Stack
+HTML,CSS (responsive dashboard UI)
 
-Selection Reasoning
+Backend
+node.js
 
-High accuracy for tabular healthcare data
+Database
+PostgreSQL (structured clinic and queue data)
 
-Handles nonlinear relationships
-
-Works well with small-to-medium datasets
-
-Alternatives Considered
-
-Random Forest Regressor
-
-Linear Regression
-
-Neural Networks (rejected due to small dataset)
-
-Evaluation Metrics
-
-
-
-
-
-
-
-
-
-
-
-
+Deployment
+Docker + Cloud hosting (AWS / Render / Railway)
