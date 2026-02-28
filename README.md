@@ -151,7 +151,7 @@ https://www.researchgate.net/publication/371131312/figure/fig1/AS%3A114312811625
 Synthetic Clinic Consultation Dataset
 
 # Source
-Hugging Face ,a kaggle,
+Hugging Face , kaggle,
 Data Type,
 Structured tabular dataset (CSV)
 
