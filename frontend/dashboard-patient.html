@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Queue Status — Smart Clinic</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        #app-main {
+            grid-template-columns: 1fr 340px;
+        }
+
+        .status-hero {
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+            padding: 40px;
+            text-align: center;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            margin-bottom: 25px;
+        }
+
+        .queue-number {
+            font-size: 5rem;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1;
+            margin: 20px 0;
+        }
+
+        .wait-time {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .logout-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <header id="app-header">
+        <div class="header-brand">
+            <span class="logo-icon">🏥</span>
+            <div>
+                <h1 id="patient-name">My Queue</h1>
+                <p class="subtitle">Personalized service dashboard</p>
+            </div>
+        </div>
+
+        <div class="header-stats">
+            <div class="stat-chip accent">
+                <span id="stat-pos" class="stat-value">--</span>
+                <span class="stat-label">Position</span>
+            </div>
+            <div class="stat-chip">
+                <span id="stat-wait" class="stat-value">--m</span>
+                <span class="stat-label">Est. Wait</span>
+            </div>
+            <button class="btn logout-btn" onclick="Auth.logout()" style="margin-left: 15px;">Logout</button>
+        </div>
+    </header>
+
+    <main id="app-main">
+        <!-- Center: My Status -->
+        <section id="my-status-panel">
+            <div class="status-hero">
+                <p class="subtitle" style="font-size: 1rem;">Your Current Position</p>
+                <div class="queue-number" id="hero-pos">--</div>
+                <p class="wait-time" id="hero-wait">Calculating wait time...</p>
+                <div id="assigned-doctor"
+                    style="margin-top: 20px; color: var(--success); font-weight: 600; display: none;">
+                    Assigned to <span id="doctor-name-val"></span>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>📋 Appointment Details</h2>
+                </div>
+                <div class="panel-body" id="session-details" style="padding: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="stat-chip" style="width: 100%; align-items: flex-start; padding: 15px;">
+                            <span class="stat-label">Visit Type</span>
+                            <span id="detail-type" class="stat-value" style="font-size: 1.1rem;">-</span>
+                        </div>
+                        <div class="stat-chip" style="width: 100%; align-items: flex-start; padding: 15px;">
+                            <span class="stat-label">Priority Level</span>
+                            <span id="detail-priority" class="stat-value" style="font-size: 1.1rem;">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right: Upload Section -->
+        <section id="files-panel" class="panel">
+            <div class="panel-header">
+                <h2>📎 My Documents</h2>
+            </div>
+            <div class="panel-body" style="padding: 15px;">
+                <div class="drop-zone" id="drop-zone" style="padding: 20px;">
+                    <p>Tap to upload documents</p>
+                    <input type="file" id="file-input" style="display: none;">
+                </div>
+                <div id="file-name-display" class="file-name-display"></div>
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 20px;" id="btn-upload"
+                    onclick="uploadFile(event)" disabled>Upload New File</button>
+
+                <div id="user-files-list" class="user-files-list" style="border: none; padding-top: 0;">
+                    <!-- Files loaded here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast-container"></div>
+
+    <script src="auth.js"></script>
+    <script src="common.js"></script>
+    <script src="patient.js"></script>
+</body>
+
+</html>
