@@ -132,7 +132,18 @@ Rule-based scheduling logic
 
 Improved clinic efficiency
 
+#  System Architecture
+# High-Level Flow
 
+User → Frontend → Backend → Scheduling Logic → Database → Response
+
+# Architecture Description
+
+Our system follows a simple client-server architecture with dynamic queue processing.
+
+# Architecture Diagram 
+
+https://www.researchgate.net/publication/371131312/figure/fig1/AS%3A11431281162578042%401685370097903/The-frontend-backend-and-database-of-a-web-based-application.jpg
 
 
 
