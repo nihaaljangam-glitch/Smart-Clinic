@@ -145,6 +145,84 @@ Our system follows a simple client-server architecture with dynamic queue proces
 
 https://www.researchgate.net/publication/371131312/figure/fig1/AS%3A11431281162578042%401685370097903/The-frontend-backend-and-database-of-a-web-based-application.jpg
 
+# 5. Dataset Selected
+# Dataset Name
+
+Synthetic Clinic Consultation Dataset
+
+# Source
+Hugging Face ,a kaggle
+Data Type
+Structured tabular dataset (CSV)
+
+# Selection Reason
+
+Real clinic data is sensitive and hard to access
+
+Allows modeling variability in consultation time
+
+Enables training and testing without privacy concerns
+
+Preprocessing Steps
+
+Removed missing or inconsistent entries
+
+Encoded categorical variables (visit type, urgency)
+
+Normalized consultation duration
+
+Feature engineering (arrival delay, doctor workload)
+
+# 7.⁠ ⁠Model Selected
+# Model Name
+Gradient Boosting Regressor (Consultation Time Prediction)
+
+Selection Reasoning
+
+High accuracy for tabular healthcare data
+
+Handles nonlinear relationships
+
+Works well with small-to-medium datasets
+
+Alternatives Considered
+
+Random Forest Regressor
+
+Linear Regression
+
+Neural Networks (rejected due to small dataset)
+
+Evaluation Metrics
+
+# 7.⁠ ⁠Model Selected
+# Model Name
+Gradient Boosting Regressor (Consultation Time Prediction)
+
+Selection Reasoning
+
+High accuracy for tabular healthcare data
+
+Handles nonlinear relationships
+
+Works well with small-to-medium datasets
+
+Alternatives Considered
+
+Random Forest Regressor
+
+Linear Regression
+
+Neural Networks (rejected due to small dataset)
+
+Evaluation Metrics
+
+
+
+
+
+
+
 
 
 
