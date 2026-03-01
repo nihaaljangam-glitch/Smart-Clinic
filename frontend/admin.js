@@ -30,10 +30,10 @@ async function loadStats() {
         const res = await apiFetch('/service/stats');
         const data = await res.json();
 
-        document.querySelector('#stat-patients .stat-value').textContent = data.total_users;
-        document.querySelector('#stat-staff .stat-value').textContent = data.total_staff;
-        document.querySelector('#stat-queue .stat-value').textContent = data.queue_length;
-        document.querySelector('#stat-wait .stat-value').textContent = data.average_wait_minutes + 'm';
+        updateText(document.querySelector('#stat-patients .stat-value'), data.total_users);
+        updateText(document.querySelector('#stat-staff .stat-value'), data.total_staff);
+        updateText(document.querySelector('#stat-queue .stat-value'), data.queue_length);
+        updateText(document.querySelector('#stat-wait .stat-value'), data.average_wait_minutes + 'm');
     } catch (err) {
         console.error('Failed to load stats:', err);
     }
@@ -50,11 +50,11 @@ async function loadQueue() {
             .sort((a, b) => b.score - a.score);
 
         if (active.length === 0) {
-            container.innerHTML = '<div class="empty-state">No patients in queue</div>';
+            setHtml(container, '<div class="empty-state">No patients in queue</div>');
             return;
         }
 
-        container.innerHTML = active.map((u, i) => `
+        setHtml(container, active.map((u, i) => `
             <div class="queue-card">
                 <div class="queue-rank">#${i + 1}</div>
                 <div class="queue-info">
@@ -63,7 +63,7 @@ async function loadQueue() {
                 </div>
                 <span class="badge badge-${u.visit_type || 'regular'}">${(u.visit_type || 'regular').replace('_', '-')}</span>
             </div>
-        `).join('');
+        `).join(''));
     } catch (err) {
         console.error('Failed to load queue:', err);
     }
@@ -79,7 +79,7 @@ async function loadPatients() {
         const staffData = await staffRes.json();
         const activeStaffList = staffData.staff.filter(s => s.active);
 
-        container.innerHTML = data.users.map(u => {
+        setHtml(container, data.users.map(u => {
             const id = u._id;
             const isActive = ['waiting', 'scheduled', 'booked'].includes(u.status);
             const isBooked = u.status === 'booked';
@@ -145,7 +145,8 @@ async function loadPatients() {
                     <button class="btn btn-sm btn-primary" onclick="savePatientEdit('${id}')" style="width:100%;">💾 Save Changes</button>
                 </div>
             </div>`;
-        }).join('');
+        }).join(''));
+
     } catch (err) {
         console.error('Failed to load patients:', err);
     }

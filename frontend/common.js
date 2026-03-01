@@ -29,6 +29,26 @@ async function apiFetch(endpoint, options = {}) {
     return res;
 }
 
+/**
+ * Smart innerHTML setter — skips the DOM write if content hasn't changed.
+ * Prevents the full DOM tear-down/rebuild flicker on every poll cycle.
+ */
+function setHtml(element, html) {
+    if (!element) return;
+    if (element._lastHtml === html) return; // no change — do nothing
+    element._lastHtml = html;
+    element.innerHTML = html;
+}
+
+/**
+ * Smart text setter — only updates the DOM node if the value changed.
+ */
+function updateText(element, text) {
+    if (!element) return;
+    const str = String(text ?? '');
+    if (element.textContent !== str) element.textContent = str;
+}
+
 function toast(message, type = 'info') {
     const container = document.getElementById('toast-container');
     if (!container) return;

@@ -51,10 +51,10 @@ async function loadMyQueue() {
         const servingContainer = document.getElementById('serving-container');
 
         const queue = data.queue_details || [];
-        document.getElementById('stat-my-queue').textContent = queue.length;
+        updateText(document.getElementById('stat-my-queue'), queue.length);
 
         if (queue.length === 0) {
-            container.innerHTML = '<div class="empty-state">No patients assigned to you.</div>';
+            setHtml(container, '<div class="empty-state">No patients assigned to you.</div>');
             servingContainer.style.display = 'none';
             return;
         }
@@ -66,7 +66,7 @@ async function loadMyQueue() {
             servingContainer.style.display = 'block';
             const isServing = top.status === 'serving';
 
-            servingContainer.innerHTML = `
+            setHtml(servingContainer, `
                 <div class="patient-big-card" style="border-left-color: ${isServing ? 'var(--success)' : 'var(--accent)'}">
                     <div class="badge" style="margin-bottom: 10px; background: ${isServing ? 'rgba(34,197,94,0.2)' : 'rgba(56,189,248,0.2)'}">
                         ${isServing ? 'ONGOING SESSION' : 'READY TO START'}
@@ -83,16 +83,16 @@ async function loadMyQueue() {
                         <button class="btn btn-info" onclick="openViewFilesModal('${top._id}', '${top.name}')">View Files</button>
                     </div>
                 </div>
-            `;
+            `);
         }
 
         // List the rest
         const upcoming = queue.slice(top.status === 'serving' || top.status === 'scheduled' ? 1 : 0);
 
         if (upcoming.length === 0) {
-            container.innerHTML = '<div class="empty-state">No upcoming patients.</div>';
+            setHtml(container, '<div class="empty-state">No upcoming patients.</div>');
         } else {
-            container.innerHTML = upcoming.map(u => `
+            setHtml(container, upcoming.map(u => `
                 <div class="patient-card" style="margin-bottom: 10px;">
                     <div class="patient-top">
                         <span class="patient-name">${escHtml(u.name)}</span>
@@ -108,7 +108,7 @@ async function loadMyQueue() {
                         <button class="btn btn-sm btn-info" onclick="openViewFilesModal('${u._id}', '${escHtml(u.name)}')">View Files</button>
                     </div>
                 </div>
-            `).join('');
+            `).join(''));
         }
     } catch (err) {
         console.error('Failed to load queue:', err);
