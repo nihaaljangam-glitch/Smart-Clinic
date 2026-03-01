@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="style.css">
     <style>
         .logout-btn {
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.05);
             color: var(--danger);
             border: 1px solid var(--danger);
         }
@@ -87,6 +87,10 @@
                         style="width: 80px;">
                 </div>
                 <input type="number" id="p-time" placeholder="Est. Service Time (min)" value="15" required>
+                <select id="p-doctor"
+                    style="width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:6px; font-family:inherit; background:var(--bg-secondary); color:var(--text-primary);">
+                    <option value="">— Auto-assign doctor —</option>
+                </select>
                 <button type="submit" class="btn btn-primary">Add Patient</button>
             </form>
 
@@ -98,18 +102,25 @@
         <!-- Right: Staff & Resources -->
         <section id="staff-panel" class="panel">
             <div class="panel-header">
-                <h2>🩺 Staff</h2>
-                <button class="btn btn-sm btn-primary" onclick="toggleForm('staff-form')">+ Add</button>
+                <h2>🩺 Staff & Admins</h2>
+                <button class="btn btn-sm btn-primary" onclick="toggleForm('staff-form')">+ Add Staff/Admin</button>
             </div>
 
-            <form id="staff-form" class="add-form" onsubmit="addStaff(event)">
-                <input type="text" id="s-name" placeholder="Doctor Name" required>
+            <form id="staff-form" class="add-form" onsubmit="addStaffAccount(event)">
+                <input type="text" id="s-name" placeholder="Full Name" required>
+                <input type="email" id="s-email" placeholder="Email Address" required>
+                <input type="password" id="s-password" placeholder="Password" required>
                 <div class="time-row">
-                    <input type="time" id="s-start" value="00:00" required>
-                    <span>to</span>
-                    <input type="time" id="s-end" value="23:59" required>
+                    <select id="s-role" style="flex: 1;">
+                        <option value="staff">Doctor / Staff</option>
+                        <option value="admin">Administrator</option>
+                    </select>
                 </div>
-                <button type="submit" class="btn btn-primary">Add Staff</button>
+                <div class="time-row" id="staff-hours-row">
+                    <input type="text" id="s-start" placeholder="Start (09:00)" value="09:00">
+                    <input type="text" id="s-end" placeholder="End (17:00)" value="17:00">
+                </div>
+                <button type="submit" class="btn btn-primary">Create Account</button>
             </form>
 
             <div id="staff-list" class="panel-body">
@@ -144,9 +155,15 @@
 
     <div id="toast-container"></div>
 
-    <script src="auth.js"></script>
-    <script src="common.js"></script>
-    <script src="admin.js"></script>
+    <script src="auth.js?v=2"></script>
+    <script src="common.js?v=2"></script>
+    <script src="admin.js?v=3"></script>
+    <script>
+        // Toggle hours based on role
+        document.getElementById('s-role').onchange = (e) => {
+            document.getElementById('staff-hours-row').style.display = e.target.value === 'admin' ? 'none' : 'flex';
+        };
+    </script>
 </body>
 
 </html>

@@ -51,10 +51,10 @@ app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 // ─── Mount API Routers ────────────────────────────────────────
 app.use('/auth', authRouter);
-app.use('/', usersRouter);
-app.use('/', staffRouter);
-app.use('/', serviceRouter);
-app.use('/', uploadsRouter);
+app.use('/users', usersRouter);
+app.use('/staff', staffRouter);
+app.use('/service', serviceRouter);
+app.use('/uploads', uploadsRouter);
 
 // ─── Health Check ─────────────────────────────────────────────
 app.get('/health', async (_req, res) => {
@@ -136,23 +136,31 @@ async function start() {
         app.listen(PORT, () => {
             console.log(`\n🚀 Smart Clinic running at http://localhost:${PORT}`);
             console.log(`\n📋 API Endpoints:`);
-            console.log(`   GET    /users                   — List all patients`);
-            console.log(`   POST   /users                   — Add patient`);
-            console.log(`   POST   /priority/:id             — Update priority`);
-            console.log(`   GET    /user/status/:id           — Patient status`);
-            console.log(`   GET    /staff                   — List all staff`);
-            console.log(`   POST   /staff                   — Add staff`);
-            console.log(`   GET    /queue/status/:id          — Staff queue`);
-            console.log(`   POST   /service/schedule/:id      — Schedule patient`);
-            console.log(`   POST   /queue/optimize            — Optimize queue`);
-            console.log(`   POST   /cancel/:id               — Cancel patient`);
-            console.log(`   POST   /no-show/:id              — Mark no-show`);
-            console.log(`   POST   /emergency/:id            — Emergency override`);
-            console.log(`   GET    /stats                   — Dashboard stats`);
-            console.log(`   POST   /upload/:id              — Upload file`);
-            console.log(`   GET    /files/:id               — List patient files`);
-            console.log(`   GET    /download/:id/:fileId    — Download file`);
-            console.log(`   GET    /health                  — Health check\n`);
+            console.log(`   GET    /users                      — List all patients`);
+            console.log(`   POST   /users                      — Add patient`);
+            console.log(`   PATCH  /users/history              — Update medical history`);
+            console.log(`   POST   /users/book                 — Book appointment`);
+            console.log(`   GET    /users/status/:id           — Patient status`);
+            console.log(`   PATCH  /users/profile              — Update profile`);
+            console.log(`   GET    /users/files/:id            — List user files`);
+            console.log(`   GET    /staff                      — List all staff`);
+            console.log(`   POST   /staff                      — Add staff`);
+            console.log(`   DELETE /staff/:id                  — Delete staff`);
+            console.log(`   GET    /staff/queue/status/:id     — Staff queue`);
+            console.log(`   POST   /service/schedule/:id       — Auto-schedule patient`);
+            console.log(`   POST   /service/assign-doctor/:u/:s — Manual doctor assign`);
+            console.log(`   POST   /service/queue/optimize     — Optimize/rebalance queues`);
+            console.log(`   POST   /service/cancel/:id         — Cancel patient`);
+            console.log(`   POST   /service/no-show/:id        — Mark no-show`);
+            console.log(`   POST   /service/complete/:id       — Mark complete`);
+            console.log(`   POST   /service/reassign/:id       — Reassign patient`);
+            console.log(`   PATCH  /service/users/:id/status   — Generic status update`);
+            console.log(`   POST   /service/emergency/:id      — Emergency override`);
+            console.log(`   GET    /service/stats              — Dashboard stats`);
+            console.log(`   POST   /upload/:id                 — Upload file`);
+            console.log(`   GET    /files/:id                  — List patient files`);
+            console.log(`   GET    /download/:id/:fileId       — Download file`);
+            console.log(`   GET    /health                     — Health check\n`);
         });
 
     } catch (err) {

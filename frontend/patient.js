@@ -1,157 +1,128 @@
 /**
- * frontend/patient.js — Patient Dashboard Logic
+ * frontend/patient.js — Patient Dashboard (Status Hub)
+ * Only handles queue status display.
+ * Profile/history/files → profile.html
+ * Booking → booking.html
  */
 
 let refreshInterval;
 
 document.addEventListener('DOMContentLoaded', () => {
     const user = Auth.getUser();
-    if (user?.role !== 'patient') {
+    if (!user || user.role !== 'patient') {
         Auth.redirectToDashboard(user?.role);
         return;
     }
 
-    document.getElementById('patient-name').textContent = `Hello, ${user.name}`;
-    refreshAll();
-    refreshInterval = setInterval(refreshAll, 5000);
-    setupDropZone();
-});
+    document.getElementById('patient-name').textContent = `Hi, ${user.name}`;
+    document.getElementById('patient-id-val').textContent = user.linked_id.slice(-8).toUpperCase();
 
-async function refreshAll() {
-    await Promise.all([
-        loadMyStatus(),
-        loadMyFiles(),
-    ]);
-}
+    loadMyStatus();
+    refreshInterval = setInterval(loadMyStatus, 15000); // 15s — only status, very light
+});
 
 async function loadMyStatus() {
     try {
         const user = Auth.getUser();
-        const userId = user.linked_id;
-
-        const res = await apiFetch(`/user/status/${userId}`);
+        const res = await apiFetch(`/users/status/${user.linked_id}`);
         const data = await res.json();
 
-        // Backend returns: { ...user, queue_position: X, estimated_wait_minutes: Y }
-        const pos = data.queue_position || '?';
-        const wait = data.estimated_wait_minutes || 0;
+        const status = data.status || 'inactive';
+        const pos = data.queue_position;
+        const wait = data.estimated_wait_minutes;
 
-        document.getElementById('stat-pos').textContent = `#${pos}`;
-        document.getElementById('hero-pos').textContent = pos;
-        document.getElementById('stat-wait').textContent = wait + 'm';
-        document.getElementById('hero-wait').textContent = `Estimated wait time: ${wait} minutes`;
+        // ── Hero ──────────────────────────────
+        const heroPos = document.getElementById('hero-pos');
+        const heroWait = document.getElementById('hero-wait');
+        const statPos = document.getElementById('stat-pos');
+        const statWait = document.getElementById('stat-wait');
 
-        const details = data;
-        document.getElementById('detail-type').textContent = (details.visit_type || 'regular').toUpperCase();
-        document.getElementById('detail-priority').textContent = `P${details.priority_level || 1}`;
+        if (status === 'inactive') {
+            heroPos.textContent = '—';
+            heroWait.textContent = 'You have no active appointment. Book one below!';
+            statPos.textContent = '—';
+            statWait.textContent = '—';
+        } else if (status === 'waiting') {
+            heroPos.textContent = pos ? `#${pos}` : '?';
+            heroWait.textContent = wait > 0 ? `Estimated wait: ~${wait} min` : 'Almost your turn!';
+            statPos.textContent = pos ? `#${pos}` : '?';
+            statWait.textContent = wait >= 0 ? `${wait}m` : '—';
+        } else if (status === 'scheduled') {
+            heroPos.textContent = pos ? `#${pos}` : '📋';
+            heroWait.textContent = wait > 0 ? `Estimated wait: ~${wait} min` : 'Almost your turn!';
+            statPos.textContent = pos ? `#${pos}` : 'Q';
+            statWait.textContent = wait >= 0 ? `${wait}m` : '—';
+        } else if (status === 'serving') {
+            heroPos.textContent = '🩺';
+            heroWait.textContent = 'You are currently being seen by a doctor.';
+            statPos.textContent = 'NOW';
+            statWait.textContent = '0m';
+        } else if (status === 'completed') {
+            heroPos.textContent = '✅';
+            heroWait.textContent = 'Your session is complete. Thank you for visiting!';
+            statPos.textContent = 'DONE';
+            statWait.textContent = '—';
+        } else if (status === 'booked') {
+            heroPos.textContent = '📅';
+            const apptDate = data.appointment_date ? new Date(data.appointment_date).toLocaleString() : '—';
+            heroWait.textContent = `Upcoming appointment: ${apptDate}`;
+            statPos.textContent = 'BOOKED';
+            statWait.textContent = '—';
+        } else {
+            heroPos.textContent = status.toUpperCase();
+            heroWait.textContent = '';
+            statPos.textContent = '—';
+            statWait.textContent = '—';
+        }
 
-        const docNameVal = document.getElementById('doctor-name-val');
+        // ── Assigned Doctor ───────────────────
         const docRow = document.getElementById('assigned-doctor');
+        const docNameVal = document.getElementById('doctor-name-val');
+        const apptDocRow = document.getElementById('appt-doc-row');
+        const detailDoctor = document.getElementById('detail-doctor');
 
-        if (details.assigned_staff_id) {
-            // Fetch doctor name
-            const sRes = await apiFetch('/staff');
-            const sData = await sRes.json();
-            const doctor = sData.staff.find(s => s._id === details.assigned_staff_id);
-            if (doctor) {
-                const isServing = details.status === 'serving';
-                docNameVal.textContent = isServing ? `${doctor.name} (Currently Serving You)` : doctor.name;
-                docRow.style.display = 'block';
-                docRow.style.color = isServing ? 'var(--success)' : 'var(--accent)';
-
-                if (isServing) {
-                    document.getElementById('hero-wait').textContent = "You are currently in a session.";
-                    document.getElementById('stat-wait').textContent = "0m";
+        if (data.assigned_staff_id) {
+            try {
+                const sRes = await apiFetch('/staff');
+                const sData = await sRes.json();
+                const doctor = (sData.staff || []).find(s => s._id === data.assigned_staff_id);
+                if (doctor) {
+                    docNameVal.textContent = doctor.name;
+                    docRow.style.display = 'block';
+                    detailDoctor.textContent = doctor.name;
+                    apptDocRow.style.display = 'flex';
                 }
-            }
+            } catch (_) { }
         } else {
             docRow.style.display = 'none';
+            apptDocRow.style.display = 'none';
+        }
+
+        // ── Appointment Details ───────────────
+        document.getElementById('detail-type').textContent = (data.visit_type || 'regular').toUpperCase();
+        document.getElementById('detail-priority').textContent = data.priority_level ? `P${data.priority_level}` : '—';
+
+        const statusBadgeMap = {
+            inactive: 'sb-inactive', waiting: 'sb-waiting', scheduled: 'sb-scheduled',
+            serving: 'sb-serving', completed: 'sb-completed'
+        };
+        const badge = statusBadgeMap[status] || 'sb-inactive';
+        document.getElementById('detail-status').innerHTML =
+            `<span class="status-badge ${badge}">${status.replace('_', ' ').toUpperCase()}</span>`;
+
+        // ── Booking Card visibility ───────────
+        const bookCard = document.getElementById('card-booking');
+        if (['waiting', 'scheduled', 'serving'].includes(status)) {
+            bookCard.style.opacity = '0.5';
+            bookCard.style.pointerEvents = 'none';
+            bookCard.querySelector('.nc-desc').textContent = 'Already in queue';
+        } else {
+            bookCard.style.opacity = '1';
+            bookCard.style.pointerEvents = 'auto';
+            bookCard.querySelector('.nc-desc').textContent = 'Join the queue & choose your doctor';
         }
 
     } catch (err) {
-        console.error('Failed to load status:', err);
-    }
-}
-
-// ─── FILE UPLOAD ──────────────────────────────────────────────
-
-function setupDropZone() {
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-input');
-    if (!dropZone) return;
-
-    dropZone.onclick = () => fileInput.click();
-    dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); };
-    dropZone.ondragleave = () => dropZone.classList.remove('drag-over');
-    dropZone.ondrop = (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('drag-over');
-        if (e.dataTransfer.files.length) {
-            fileInput.files = e.dataTransfer.files;
-            onFileSelected();
-        }
-    };
-    fileInput.onchange = onFileSelected;
-}
-
-function onFileSelected() {
-    const fileInput = document.getElementById('file-input');
-    if (fileInput.files.length) {
-        document.getElementById('file-name-display').textContent = `📄 ${fileInput.files[0].name}`;
-        document.getElementById('btn-upload').disabled = false;
-    }
-}
-
-async function uploadFile(e) {
-    e.preventDefault();
-    const user = Auth.getUser();
-    const userId = user.linked_id;
-    const fileInput = document.getElementById('file-input');
-    if (!fileInput.files.length) return;
-
-    const formData = new FormData();
-    formData.append('file', fileInput.files[0]);
-
-    try {
-        const res = await fetch(`${API}/upload/${userId}`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${Auth.getToken()}` },
-            body: formData,
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-
-        toast(`File uploaded successfully`, 'success');
-        fileInput.value = '';
-        document.getElementById('file-name-display').textContent = '';
-        document.getElementById('btn-upload').disabled = true;
-        loadMyFiles();
-    } catch (err) {
-        toast(err.message, 'error');
-    }
-}
-
-async function loadMyFiles() {
-    const user = Auth.getUser();
-    const userId = user.linked_id;
-    const container = document.getElementById('user-files-list');
-
-    try {
-        const res = await apiFetch(`/files/${userId}`);
-        const data = await res.json();
-        if (!data.files || data.files.length === 0) {
-            container.innerHTML = '<p style="font-size:0.8rem; color:var(--text-muted);">No documents uploaded yet.</p>';
-            return;
-        }
-        container.innerHTML = `
-            ${data.files.map(f => `
-                <div class="file-item">
-                    <span>📄 ${escHtml(f.filename)}</span>
-                    <a href="${API}/download/${userId}/${f.file_id}" target="_blank">View</a>
-                </div>
-            `).join('')}
-        `;
-    } catch (err) {
-        container.innerHTML = '<p>Failed to load files.</p>';
+        console.error('Status load failed:', err);
     }
 }

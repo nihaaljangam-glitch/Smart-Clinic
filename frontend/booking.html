@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment — Smart Clinic</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f8fafc 100%);
+            padding: 20px;
+        }
+
+        .booking-wrapper {
+            width: 100%;
+            max-width: 560px;
+        }
+
+        .booking-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.10);
+            overflow: hidden;
+        }
+
+        .booking-header {
+            background: linear-gradient(135deg, var(--accent) 0%, #2563eb 100%);
+            padding: 36px 36px 28px;
+            color: white;
+            text-align: center;
+        }
+
+        .booking-header .logo {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .booking-header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .booking-header p {
+            opacity: 0.85;
+            font-size: 0.95rem;
+        }
+
+        .booking-body {
+            padding: 32px 36px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: white;
+        }
+
+        .visit-type-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .visit-type-btn {
+            padding: 14px 10px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-secondary);
+            cursor: pointer;
+            text-align: center;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .visit-type-btn .vt-icon {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .visit-type-btn .vt-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .visit-type-btn.selected {
+            border-color: var(--accent);
+            background: rgba(56, 189, 248, 0.08);
+        }
+
+        .visit-type-btn.selected .vt-label {
+            color: var(--accent);
+        }
+
+        .visit-type-btn.emergency.selected {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .visit-type-btn.emergency.selected .vt-label {
+            color: var(--danger);
+        }
+
+        .emergency-notice {
+            display: none;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 0.875rem;
+            color: var(--danger);
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .emergency-notice.show {
+            display: block;
+        }
+
+        .btn-book {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--accent), #2563eb);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            font-family: inherit;
+        }
+
+        .btn-book:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(56, 189, 248, 0.35);
+        }
+
+        .btn-book:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-book.emergency-mode {
+            background: linear-gradient(135deg, var(--danger), #b91c1c);
+        }
+
+        .btn-book.emergency-mode:hover {
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            color: var(--accent);
+        }
+
+        /* Success State */
+        .success-state {
+            text-align: center;
+            padding: 32px 36px;
+            display: none;
+        }
+
+        .success-state .success-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+        }
+
+        .success-state h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: var(--success);
+        }
+
+        .success-state p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .queue-result {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .queue-stat {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .queue-stat .qs-num {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .queue-stat .qs-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        .queue-stat.emergency .qs-num {
+            color: var(--danger);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="booking-wrapper">
+        <div class="booking-card">
+
+            <!-- Booking Form -->
+            <div id="booking-form-state">
+                <div class="booking-header">
+                    <div class="logo">📅</div>
+                    <h1>Book Appointment</h1>
+                    <p id="patient-greet">Secure your spot in our clinic queue</p>
+                </div>
+
+                <div class="booking-body">
+                    <!-- Visit Type -->
+                    <div class="form-group">
+                        <label>Visit Type</label>
+                        <div class="visit-type-grid">
+                            <button type="button" class="visit-type-btn selected" data-type="regular"
+                                onclick="selectVisitType('regular')">
+                                <span class="vt-icon">🩺</span>
+                                <span class="vt-label">Regular</span>
+                            </button>
+                            <button type="button" class="visit-type-btn emergency" data-type="emergency"
+                                onclick="selectVisitType('emergency')">
+                                <span class="vt-icon">🚨</span>
+                                <span class="vt-label">Emergency</span>
+                            </button>
+                            <button type="button" class="visit-type-btn" data-type="follow_up"
+                                onclick="selectVisitType('follow_up')">
+                                <span class="vt-icon">🔄</span>
+                                <span class="vt-label">Follow-Up</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="emergency-notice" id="emergency-notice">
+                        ⚠️ Emergency selected. You will be immediately assigned to the first available doctor and placed
+                        at the top of the queue.
+                    </div>
+
+                    <!-- Date & Time (hidden for emergency) -->
+                    <div class="form-group" id="date-group">
+                        <label>Preferred Date & Time</label>
+                        <input type="datetime-local" id="appointment-date">
+                    </div>
+
+                    <!-- Preferred Doctor -->
+                    <div class="form-group">
+                        <div
+                            style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                            <label style="margin:0;">Doctor Assignment</label>
+                            <button type="button" id="btn-edit-doctor" class="btn btn-sm" onclick="toggleDoctorEdit()"
+                                style="font-size:0.8rem; padding:4px 10px; background:transparent; border:1px solid var(--border); border-radius:6px; cursor:pointer;">✏️
+                                Change Doctor</button>
+                        </div>
+                        <div
+                            style="background: var(--bg-secondary); border-radius:10px; padding:12px 14px; color:var(--text-secondary); font-size:0.9rem;">
+                            🤖 Auto-assign best available doctor
+                        </div>
+                        <div id="preferred-doctor-row" style="display:none; margin-top:10px;">
+                            <select id="preferred-doctor"
+                                style="width:100%; padding:12px 14px; border:2px solid var(--border); border-radius:10px; font-size:1rem; font-family:inherit; background:var(--bg-secondary); color:var(--text-primary);">
+                                <option value="">— Auto-assign best available —</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="btn-book" id="btn-book" onclick="submitBooking()">
+                        🗓️ Confirm Booking & Enter Queue
+                    </button>
+                </div>
+            </div>
+
+            <!-- Success State -->
+            <div class="success-state" id="success-state">
+                <div class="success-icon" id="success-icon">✅</div>
+                <h2 id="success-title">You're In the Queue!</h2>
+                <p id="success-msg">Your appointment has been confirmed.</p>
+
+                <div class="queue-result" id="queue-result">
+                    <div class="queue-stat" id="position-stat">
+                        <div class="qs-num" id="q-pos">—</div>
+                        <div class="qs-label">Queue Position</div>
+                    </div>
+                    <div class="queue-stat">
+                        <div class="qs-num" id="q-wait" style="font-size: 2rem;">—</div>
+                        <div class="qs-label">Est. Wait (min)</div>
+                    </div>
+                </div>
+
+                <p id="doctor-assigned-msg" style="font-weight: 600; color: var(--accent); display:none;"></p>
+
+                <button class="btn-book" style="margin-top: 16px;"
+                    onclick="window.location.href='dashboard-patient.html'">
+                    Go to My Dashboard →
+                </button>
+            </div>
+
+        </div>
+        <a class="back-link" href="dashboard-patient.html">← Back to Dashboard</a>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script src="auth.js"></script>
+    <script src="common.js"></script>
+    <script src="booking.js"></script>
+</body>
+
+</html>

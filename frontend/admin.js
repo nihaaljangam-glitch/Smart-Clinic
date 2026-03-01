@@ -11,7 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     refreshAll();
-    refreshInterval = setInterval(refreshAll, 5000);
+    populateDoctorDropdown(); // fill doctor selector in Add Patient form
+    refreshInterval = setInterval(refreshAll, 15000); // 15s refresh
     setupDropZone();
 });
 
@@ -26,7 +27,7 @@ async function refreshAll() {
 
 async function loadStats() {
     try {
-        const res = await apiFetch('/stats');
+        const res = await apiFetch('/service/stats');
         const data = await res.json();
 
         document.querySelector('#stat-patients .stat-value').textContent = data.total_users;
@@ -74,14 +75,15 @@ async function loadPatients() {
         const data = await res.json();
         const container = document.getElementById('patient-list');
 
-        if (data.users.length === 0) {
-            container.innerHTML = '<div class="empty-state">No patients yet</div>';
-            return;
-        }
+        const staffRes = await apiFetch('/staff');
+        const staffData = await staffRes.json();
+        const activeStaffList = staffData.staff.filter(s => s.active);
 
         container.innerHTML = data.users.map(u => {
             const id = u._id;
-            const isActive = ['waiting', 'scheduled'].includes(u.status);
+            const isActive = ['waiting', 'scheduled', 'booked'].includes(u.status);
+            const isBooked = u.status === 'booked';
+
             return `
             <div class="patient-card">
                 <div class="patient-top">
@@ -93,13 +95,54 @@ async function loadPatients() {
                     <span class="badge badge-priority">P${u.priority_level}</span>
                     <span class="badge badge-waiting">${u.estimated_service_time}min</span>
                     ${u.assigned_staff_id ? `<span class="badge badge-scheduled">Assigned</span>` : ''}
+                    ${isBooked && u.appointment_date ? `<span class="badge badge-info">${new Date(u.appointment_date).toLocaleDateString()}</span>` : ''}
                 </div>
-                <div class="patient-actions">
-                    ${isActive && !u.assigned_staff_id ? `<button class="btn btn-sm btn-success" onclick="schedulePatient('${id}')">Schedule</button>` : ''}
+                
+                ${isActive ? `
+                <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
+                    <select class="input" style="padding:4px; font-size:0.8rem; flex:1;" id="assign-staff-${id}">
+                        <option value="">Select Doctor...</option>
+                        ${activeStaffList.map(s => `<option value="${s._id}" ${u.assigned_staff_id === s._id ? 'selected' : ''}>${s.name}</option>`).join('')}
+                    </select>
+                    <button class="btn btn-sm btn-primary" onclick="assignDoctor('${id}')">Assign</button>
+                </div>
+                ` : ''}
+
+                <div class="patient-actions" style="margin-top:10px;">
+                    ${isActive && !u.assigned_staff_id ? `<button class="btn btn-sm btn-success" onclick="schedulePatient('${id}')">Auto-Assign</button>` : ''}
+                    ${isActive && u.visit_type !== 'emergency' ? `<button class="btn btn-sm btn-danger" onclick="convertToEmergency('${id}')" title="Upgrade to Emergency" style="background:linear-gradient(135deg,#ef4444,#dc2626); color:white; font-weight:700;">🚨 Emergency</button>` : ''}
+                    <button class="btn btn-sm" onclick="toggleEditPanel('${id}')" style="background:var(--bg-secondary); border:1px solid var(--border);">✏️ Edit</button>
+                    ${isActive ? `<button class="btn btn-sm btn-warning" onclick="noShowPatient('${id}')">No-show</button>` : ''}
                     ${isActive ? `<button class="btn btn-sm btn-danger" onclick="cancelPatient('${id}')">Cancel</button>` : ''}
-                    ${isActive ? `<button class="btn btn-sm btn-warning" onclick="noShowPatient('${id}')" title="Mark as No-Show">No-Show</button>` : ''}
-                    ${isActive ? `<button class="btn btn-sm btn-danger" onclick="emergencyOverride('${id}')" style="background:#b91c1c">🚨 Emergency</button>` : ''}
                     <button class="btn btn-sm btn-info" onclick="openUploadModal('${id}')">📎 Files</button>
+                </div>
+
+                <!-- Inline Edit Panel (hidden by default) -->
+                <div id="edit-panel-${id}" style="display:none; margin-top:10px; padding:12px; background:var(--bg-secondary); border-radius:10px; border:1px solid var(--border);">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+                        <div>
+                            <label style="font-size:0.72rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:4px;">VISIT TYPE</label>
+                            <select id="edit-type-${id}" style="width:100%; padding:6px; border:1px solid var(--border); border-radius:6px; font-size:0.85rem; font-family:inherit;">
+                                <option value="regular" ${u.visit_type === 'regular' ? 'selected' : ''}>Regular</option>
+                                <option value="emergency" ${u.visit_type === 'emergency' ? 'selected' : ''}>Emergency</option>
+                                <option value="follow_up" ${u.visit_type === 'follow_up' ? 'selected' : ''}>Follow-Up</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:0.72rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:4px;">PRIORITY</label>
+                            <select id="edit-priority-${id}" style="width:100%; padding:6px; border:1px solid var(--border); border-radius:6px; font-size:0.85rem; font-family:inherit;">
+                                ${[1, 2, 3, 4, 5].map(p => `<option value="${p}" ${u.priority_level === p ? 'selected' : ''}>P${p}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:8px;">
+                        <label style="font-size:0.72rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:4px;">ASSIGNED DOCTOR</label>
+                        <select id="edit-doctor-${id}" style="width:100%; padding:6px; border:1px solid var(--border); border-radius:6px; font-size:0.85rem; font-family:inherit;">
+                            <option value="">— Keep current / Auto-assign —</option>
+                            ${activeStaffList.map(s => `<option value="${s._id}" ${u.assigned_staff_id === s._id ? 'selected' : ''}>${escHtml(s.name)}</option>`).join('')}
+                        </select>
+                    </div>
+                    <button class="btn btn-sm btn-primary" onclick="savePatientEdit('${id}')" style="width:100%;">💾 Save Changes</button>
                 </div>
             </div>`;
         }).join('');
@@ -108,22 +151,52 @@ async function loadPatients() {
     }
 }
 
+async function updatePriority(userId, level) {
+    try {
+        const res = await apiFetch(`/users/priority/${userId}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ priority_level: parseInt(level) })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        toast(`Priority updated to P${level}`, 'success');
+        refreshAll();
+    } catch (err) {
+        toast(err.message, 'error');
+    }
+}
+
+async function populateDoctorDropdown() {
+    try {
+        const res = await apiFetch('/staff');
+        const data = await res.json();
+        const sel = document.getElementById('p-doctor');
+        if (!sel) return;
+        sel.innerHTML = '<option value="">— Auto-assign doctor —</option>';
+        (data.staff || []).forEach(s => {
+            sel.innerHTML += `<option value="${s._id}">${escHtml(s.name)}</option>`;
+        });
+    } catch (_) { }
+}
+
 async function addPatient(e) {
     e.preventDefault();
     const name = document.getElementById('p-name').value.trim();
     const visit_type = document.getElementById('p-visit-type').value;
     const priority_level = parseInt(document.getElementById('p-priority').value);
     const estimated_service_time = parseInt(document.getElementById('p-time').value);
+    const preferredDoctorId = document.getElementById('p-doctor')?.value || null;
 
     try {
+        // Single call — backend creates AND queues the patient atomically
         const res = await apiFetch('/users', {
             method: 'POST',
-            body: JSON.stringify({ name, visit_type, priority_level, estimated_service_time }),
+            body: JSON.stringify({ name, visit_type, priority_level, estimated_service_time, preferredDoctorId }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
 
-        toast(`Patient "${name}" added`, 'success');
+        toast(`✅ Patient "${name}" added & queued (Position #${data.queue_position ?? '—'})`, 'success');
         document.getElementById('p-name').value = '';
         toggleForm('patient-form');
         refreshAll();
@@ -146,7 +219,7 @@ async function schedulePatient(userId) {
 
 async function cancelPatient(userId) {
     try {
-        const res = await apiFetch(`/cancel/${userId}`, { method: 'POST' });
+        const res = await apiFetch(`/service/cancel/${userId}`, { method: 'POST' });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         toast('Patient cancelled', 'info');
@@ -158,7 +231,7 @@ async function cancelPatient(userId) {
 
 async function noShowPatient(userId) {
     try {
-        const res = await apiFetch(`/no-show/${userId}`, { method: 'POST' });
+        const res = await apiFetch(`/service/no-show/${userId}`, { method: 'POST' });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         toast('Patient marked as no-show', 'info');
@@ -170,7 +243,7 @@ async function noShowPatient(userId) {
 
 async function emergencyOverride(userId) {
     try {
-        const res = await apiFetch(`/emergency/${userId}`, { method: 'POST' });
+        const res = await apiFetch(`/service/emergency/${userId}`, { method: 'POST' });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         toast(data.message, 'error');
@@ -195,7 +268,7 @@ async function loadStaff() {
             const staffId = s._id;
             let queueDetails = [];
             try {
-                const qRes = await apiFetch(`/queue/status/${staffId}`);
+                const qRes = await apiFetch(`/staff/queue/status/${staffId}`);
                 const qData = await qRes.json();
                 queueDetails = qData.queue_details || [];
             } catch (_) { }
@@ -208,6 +281,7 @@ async function loadStaff() {
                     <span class="badge badge-scheduled">${s.start_time} – ${s.end_time}</span>
                     <span class="badge badge-priority">${s.workload} min load</span>
                     <span class="badge ${s.active ? 'badge-scheduled' : 'badge-cancelled'}">${s.active ? 'Active' : 'Inactive'}</span>
+                    <button class="btn btn-sm btn-danger" onclick="deleteStaff('${staffId}')" style="padding: 2px 8px; font-size: 0.7rem;">Delete</button>
                 </div>
                 <div class="workload-bar-outer">
                     <div class="workload-bar-inner" style="width: ${workloadPct}%"></div>
@@ -225,22 +299,27 @@ async function loadStaff() {
     }
 }
 
-async function addStaff(e) {
+async function addStaffAccount(e) {
     e.preventDefault();
     const name = document.getElementById('s-name').value.trim();
+    const email = document.getElementById('s-email').value.trim();
+    const password = document.getElementById('s-password').value;
+    const role = document.getElementById('s-role').value;
     const start_time = document.getElementById('s-start').value;
     const end_time = document.getElementById('s-end').value;
 
     try {
-        const res = await apiFetch('/staff', {
+        const res = await apiFetch('/auth/create-user', {
             method: 'POST',
-            body: JSON.stringify({ name, start_time, end_time }),
+            body: JSON.stringify({ name, email, password, role, start_time, end_time }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
 
-        toast(`Staff "${name}" added`, 'success');
+        toast(data.message, 'success');
         document.getElementById('s-name').value = '';
+        document.getElementById('s-email').value = '';
+        document.getElementById('s-password').value = '';
         toggleForm('staff-form');
         refreshAll();
     } catch (err) {
@@ -250,7 +329,7 @@ async function addStaff(e) {
 
 async function optimizeQueue() {
     try {
-        const res = await apiFetch('/queue/optimize', { method: 'POST' });
+        const res = await apiFetch('/service/queue/optimize', { method: 'POST' });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         toast(`Queue optimized — ${data.queue_length} entries rebalanced`, 'success');
@@ -356,3 +435,77 @@ async function loadUserFiles(userId) {
         container.innerHTML = '<h4>Failed to load files</h4>';
     }
 }
+async function assignDoctor(userId) {
+    const staffId = document.getElementById(`assign-staff-${userId}`).value;
+    if (!staffId) return toast('Select a doctor first', 'error');
+
+    try {
+        const res = await apiFetch(`/service/assign-doctor/${userId}/${staffId}`, { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        toast('Doctor assigned successfully', 'success');
+        refreshAll();
+    } catch (err) {
+        toast(err.message, 'error');
+    }
+}
+
+async function deleteStaff(staffId) {
+    if (!confirm('Are you sure you want to delete this staff member? Their active queue will be returned to the waiting pool.')) return;
+
+    try {
+        const res = await apiFetch(`/staff/${staffId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        toast(data.message, 'success');
+        refreshAll();
+    } catch (err) {
+        toast(err.message, 'error');
+    }
+}
+
+async function convertToEmergency(userId) {
+    try {
+        const res = await apiFetch(`/service/emergency/${userId}`, { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        toast('🚨 Patient upgraded to Emergency — moved to top of queue!', 'success');
+        refreshAll();
+    } catch (err) {
+        toast(err.message, 'error');
+    }
+}
+
+function toggleEditPanel(userId) {
+    const panel = document.getElementById(`edit-panel-${userId}`);
+    if (!panel) return;
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+async function savePatientEdit(userId) {
+    const visit_type = document.getElementById(`edit-type-${userId}`)?.value;
+    const priority_level = document.getElementById(`edit-priority-${userId}`)?.value;
+    const staffId = document.getElementById(`edit-doctor-${userId}`)?.value || null;
+
+    try {
+        const res = await apiFetch(`/users/edit/${userId}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ visit_type, priority_level, staffId }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        toast('Patient updated ✓', 'success');
+        toggleEditPanel(userId);
+        refreshAll();
+    } catch (err) {
+        toast(err.message, 'error');
+    }
+}
+
+window.convertToEmergency = convertToEmergency;
+window.toggleEditPanel = toggleEditPanel;
+window.savePatientEdit = savePatientEdit;
+window.assignDoctor = assignDoctor;
+window.deleteStaff = deleteStaff;
+window.addStaffAccount = addStaffAccount;
+window.populateDoctorDropdown = populateDoctorDropdown;
