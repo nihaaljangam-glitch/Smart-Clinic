@@ -2,7 +2,8 @@
  * frontend/auth.js — Shared Auth Utilities
  */
 
-window.API = 'http://localhost:3000';
+window.API = 'https://smart-clinic-bro0.onrender.com';
+
 
 const Auth = {
     saveSession(token, user) {

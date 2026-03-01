@@ -38,9 +38,26 @@ const MONGO_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/smart-cl
 const JWT_SECRET = process.env.JWT_SECRET || 'smart-clinic-super-secret-key';
 
 // ─── Middleware ───────────────────────────────────────────────
-app.use(cors());
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://smart-clinic-bro0.onrender.com',
+    /\.vercel\.app$/,   // any Vercel preview/prod deployment
+];
+app.use(cors({
+    origin: (origin, cb) => {
+        // Allow requests with no origin (curl, Postman, server-to-server)
+        if (!origin) return cb(null, true);
+        const ok = allowedOrigins.some(o =>
+            typeof o === 'string' ? o === origin : o.test(origin)
+        );
+        cb(ok ? null : new Error('Not allowed by CORS'), ok);
+    },
+    credentials: true,
+}));
 app.use(morgan('dev'));
 app.use(express.json());
+
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
