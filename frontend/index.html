@@ -2,14 +2,871 @@
 <html lang="en">
 
 <head>
-    <script src="auth.js"></script>
-    <script>
-        Auth.checkAuthAndRedirect();
-    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Clinic — Intelligent Queue Management</title>
+    <meta name="description"
+        content="Smart Clinic streamlines patient queuing with AI-powered scheduling, real-time tracking, and smart doctor assignment.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --blue: #0ea5e9;
+            --blue-dark: #0369a1;
+            --indigo: #6366f1;
+            --green: #10b981;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* ── NAV ─────────────────────────────────── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 48px;
+            background: rgba(248, 250, 252, 0.9);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .nav-logo-mark {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, var(--blue), var(--indigo));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-logo-mark svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        .nav-logo-text {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.02em;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .nav-link {
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .nav-link:hover {
+            color: var(--text);
+        }
+
+        .nav-cta {
+            background: var(--text);
+            color: white;
+            border: none;
+            border-radius: 9px;
+            padding: 10px 22px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.15s, transform 0.15s;
+        }
+
+        .nav-cta:hover {
+            opacity: 0.85;
+            transform: translateY(-1px);
+        }
+
+        /* ── HERO ────────────────────────────────── */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 130px 24px 90px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 800px 500px at 20% 30%, rgba(14, 165, 233, 0.1) 0%, transparent 70%),
+                radial-gradient(ellipse 600px 400px at 80% 70%, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 760px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 6px 16px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 30px;
+            animation: fadeUp 0.5s ease both;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+        }
+
+        .badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--green);
+        }
+
+        .hero-title {
+            font-size: clamp(2.6rem, 5.5vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1.08;
+            letter-spacing: -0.04em;
+            margin-bottom: 24px;
+            animation: fadeUp 0.6s ease 0.1s both;
+        }
+
+        .hero-title .grad {
+            background: linear-gradient(135deg, var(--blue), var(--indigo));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-sub {
+            font-size: 1.1rem;
+            color: var(--muted);
+            line-height: 1.7;
+            max-width: 520px;
+            margin: 0 auto 42px;
+            font-weight: 400;
+            animation: fadeUp 0.6s ease 0.2s both;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeUp 0.6s ease 0.3s both;
+        }
+
+        .btn-primary {
+            background: var(--text);
+            color: white;
+            padding: 14px 32px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.15s, transform 0.15s;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.85;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: white;
+            color: var(--text);
+            border: 1.5px solid var(--border);
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.15s;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--blue);
+            color: var(--blue-dark);
+        }
+
+        /* Stats strip */
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-top: 64px;
+            flex-wrap: wrap;
+            animation: fadeUp 0.6s ease 0.4s both;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px 32px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+        }
+
+        .hstat {
+            text-align: center;
+            padding: 0 32px;
+            border-right: 1px solid var(--border);
+        }
+
+        .hstat:last-child {
+            border-right: none;
+        }
+
+        .hstat-val {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.03em;
+        }
+
+        .hstat-val span {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .hstat-label {
+            font-size: 0.76rem;
+            color: var(--muted);
+            margin-top: 4px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        /* ── SECTIONS ────────────────────────────── */
+        section {
+            padding: 100px 24px;
+        }
+
+        .section-tag {
+            display: inline-block;
+            text-align: center;
+            width: 100%;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--blue);
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: clamp(1.7rem, 3vw, 2.5rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 14px;
+        }
+
+        .section-sub {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.95rem;
+            max-width: 480px;
+            margin: 0 auto 56px;
+            line-height: 1.7;
+        }
+
+        /* ── FEATURES GRID ───────────────────────── */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            gap: 16px;
+            max-width: 1080px;
+            margin: 0 auto;
+        }
+
+        .feat-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 28px 26px;
+            border: 1px solid var(--border);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+
+        .feat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.07);
+        }
+
+        .feat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .feat-icon svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .feat-icon.blue {
+            background: #eff6ff;
+        }
+
+        .feat-icon.blue svg {
+            stroke: #3b82f6;
+        }
+
+        .feat-icon.green {
+            background: #f0fdf4;
+        }
+
+        .feat-icon.green svg {
+            stroke: #16a34a;
+        }
+
+        .feat-icon.purple {
+            background: #f5f3ff;
+        }
+
+        .feat-icon.purple svg {
+            stroke: #7c3aed;
+        }
+
+        .feat-icon.red {
+            background: #fff1f2;
+        }
+
+        .feat-icon.red svg {
+            stroke: #e11d48;
+        }
+
+        .feat-icon.amber {
+            background: #fffbeb;
+        }
+
+        .feat-icon.amber svg {
+            stroke: #d97706;
+        }
+
+        .feat-icon.slate {
+            background: #f8fafc;
+        }
+
+        .feat-icon.slate svg {
+            stroke: #475569;
+        }
+
+        .feat-card h3 {
+            font-size: 0.97rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.01em;
+        }
+
+        .feat-card p {
+            font-size: 0.84rem;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        /* ── HOW IT WORKS ────────────────────────── */
+        .how-bg {
+            background: #f1f5f9;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        .step {
+            display: flex;
+            gap: 20px;
+            padding: 28px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .step:last-child {
+            border-bottom: none;
+        }
+
+        .step-num {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--text);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .step-body h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .step-body p {
+            font-size: 0.84rem;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        /* ── ROLES ───────────────────────────────── */
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            max-width: 880px;
+            margin: 0 auto;
+        }
+
+        .role-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 28px 24px;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .role-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+            transform: translateY(-3px);
+        }
+
+        .role-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .role-icon svg {
+            width: 22px;
+            height: 22px;
+            stroke: var(--muted);
+        }
+
+        .role-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .role-card p {
+            font-size: 0.83rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        /* ── CTA ─────────────────────────────────── */
+        .cta-section {
+            background: var(--text);
+            color: white;
+            text-align: center;
+            padding: 100px 24px;
+        }
+
+        .cta-section h2 {
+            font-size: clamp(1.7rem, 3.5vw, 2.8rem);
+            font-weight: 800;
+            margin-bottom: 14px;
+            letter-spacing: -0.03em;
+        }
+
+        .cta-section p {
+            font-size: 0.97rem;
+            opacity: 0.6;
+            margin-bottom: 38px;
+            max-width: 420px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn-white {
+            background: white;
+            color: var(--text);
+            padding: 15px 38px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.15s;
+        }
+
+        .btn-white:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* ── FOOTER ─────────────────────────────── */
+        footer {
+            background: #020617;
+            color: #475569;
+            text-align: center;
+            padding: 28px 24px;
+            font-size: 0.82rem;
+        }
+
+        footer span {
+            color: #64748b;
+        }
+
+        /* ── ANIMATION ───────────────────────────── */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 640px) {
+            nav {
+                padding: 14px 20px;
+            }
+
+            .nav-right .nav-link {
+                display: none;
+            }
+
+            .hero-stats {
+                padding: 18px 20px;
+            }
+
+            .hstat {
+                padding: 0 18px;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <p>Redirecting...</p>
+
+    <!-- NAV -->
+    <nav>
+        <a href="index.html" class="nav-logo">
+            <div class="nav-logo-mark">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6H9l3-3 3 3h-2v6z" />
+                </svg>
+            </div>
+            <span class="nav-logo-text">Smart Clinic</span>
+        </a>
+        <div class="nav-right">
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#how-it-works" class="nav-link">How It Works</a>
+            <a href="login.html" class="nav-cta">Sign In</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <div class="hero-badge">
+                <div class="badge-dot"></div>
+                AI-Powered Queue Management System
+            </div>
+            <h1 class="hero-title">
+                The Smarter Way to<br>
+                <span class="grad">Run Your Clinic</span>
+            </h1>
+            <p class="hero-sub">
+                Smart Clinic eliminates waiting room chaos with intelligent patient queuing,
+                real-time doctor assignment, and seamless appointment tracking.
+            </p>
+            <div class="hero-btns">
+                <a href="login.html" class="btn-primary">Get Started &rarr;</a>
+                <a href="#how-it-works" class="btn-outline">See How It Works</a>
+            </div>
+
+            <div class="hero-stats">
+                <div class="hstat">
+                    <div class="hstat-val">~15<span>min</span></div>
+                    <div class="hstat-label">Avg. Wait Time</div>
+                </div>
+                <div class="hstat">
+                    <div class="hstat-val">3</div>
+                    <div class="hstat-label">User Roles</div>
+                </div>
+                <div class="hstat">
+                    <div class="hstat-val">100<span>%</span></div>
+                    <div class="hstat-label">Real-Time</div>
+                </div>
+                <div class="hstat">
+                    <div class="hstat-val">P1</div>
+                    <div class="hstat-label">Emergency Priority</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features">
+        <div class="section-tag">Features</div>
+        <h2 class="section-title">Everything your clinic needs</h2>
+        <p class="section-sub">From patient intake to doctor assignment — every step intelligently handled.</p>
+
+        <div class="features-grid">
+            <div class="feat-card">
+                <div class="feat-icon blue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                    </svg>
+                </div>
+                <h3>Smart Priority Queue</h3>
+                <p>Patients are ranked by urgency, wait time, and visit type using a live priority scoring algorithm.
+                </p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon red">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                </div>
+                <h3>Emergency Escalation</h3>
+                <p>Instantly move any patient to the top of the queue with a single admin action.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon green">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                </div>
+                <h3>Smart Doctor Assignment</h3>
+                <p>Auto-assigns patients to the least-loaded available doctor, or honours preferred doctor selections.
+                </p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon purple">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <path d="M3 9h18M9 21V9" />
+                    </svg>
+                </div>
+                <h3>Role-Based Dashboards</h3>
+                <p>Separate, tailored dashboards for patients, doctors, and admins with the right tools for each.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon amber">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                </div>
+                <h3>Real-Time Status Tracking</h3>
+                <p>Patients see their live queue position and a decreasing estimated wait time from any device.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon slate">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                    </svg>
+                </div>
+                <h3>Medical Records &amp; Files</h3>
+                <p>Patients upload documents and history. Doctors review all records before each session.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="how-bg" id="how-it-works">
+        <div class="section-tag">How It Works</div>
+        <h2 class="section-title">Simple. Fast. Reliable.</h2>
+        <p class="section-sub">The patient journey from registration to completion — in five clear steps.</p>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">01</div>
+                <div class="step-body">
+                    <h3>Create an Account</h3>
+                    <p>Register once with your name and email. Receive a unique Patient ID for all future visits.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">02</div>
+                <div class="step-body">
+                    <h3>Book an Appointment</h3>
+                    <p>Select your visit type (Regular, Emergency, or Follow-Up), choose a preferred doctor or
+                        auto-assign, and enter the queue instantly.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">03</div>
+                <div class="step-body">
+                    <h3>Track Your Position</h3>
+                    <p>Your dashboard shows your live queue number and a decreasing estimated wait time — updated
+                        automatically.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">04</div>
+                <div class="step-body">
+                    <h3>Consult Your Doctor</h3>
+                    <p>Your assigned doctor reviews your history and uploaded files before the session, then marks you
+                        complete or schedules follow-up care.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">05</div>
+                <div class="step-body">
+                    <h3>Admin Oversight</h3>
+                    <p>Admins monitor the full queue, reassign doctors, override priorities, and manage staff — all from
+                        one control panel.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ROLES -->
+    <section>
+        <div class="section-tag">Roles</div>
+        <h2 class="section-title">Three roles. One system.</h2>
+        <p class="section-sub">A tailored experience built for everyone in your clinic.</p>
+
+        <div class="roles-grid">
+            <div class="role-card">
+                <div class="role-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" />
+                        <line x1="8" y1="21" x2="16" y2="21" />
+                        <line x1="12" y1="17" x2="12" y2="21" />
+                    </svg>
+                </div>
+                <h3>Administrator</h3>
+                <p>Add patients, assign doctors, escalate emergencies, delete staff, and oversee the entire clinic queue
+                    from a central control panel.</p>
+            </div>
+            <div class="role-card">
+                <div class="role-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                    </svg>
+                </div>
+                <h3>Doctor</h3>
+                <p>View your assigned patient queue, access full medical history and files, mark sessions complete, and
+                    reassign when required.</p>
+            </div>
+            <div class="role-card">
+                <div class="role-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </div>
+                <h3>Patient</h3>
+                <p>Book appointments, track your queue position live, update your medical profile, and upload documents
+                    — from any device.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <h2>Ready to modernise your clinic?</h2>
+        <p>Get started with Smart Clinic and eliminate waiting room inefficiency for good.</p>
+        <a href="login.html" class="btn-white">Access Smart Clinic &rarr;</a>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>Smart Clinic &mdash; Intelligent Queue Management &mdash; Built for modern healthcare</p>
+    </footer>
+
 </body>
 
 </html>
