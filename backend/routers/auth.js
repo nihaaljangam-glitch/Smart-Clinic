@@ -62,6 +62,36 @@ router.post('/login', async (req, res) => {
 });
 
 /**
+ * POST /auth/create-user — Admin-led account creation (protected)
+ */
+router.post('/create-user', verifyToken, async (req, res) => {
+    try {
+        if (req.auth.role !== 'admin') {
+            return res.status(403).json({ error: 'Only admins can create clinical accounts' });
+        }
+
+        const { name, email, password, role, start_time, end_time } = req.body;
+        if (!name || !email || !password || !role) {
+            return res.status(400).json({ error: 'All fields (name, email, password, role) are required' });
+        }
+
+        const result = await queueService.register({ name, email, password, role, start_time, end_time });
+        res.status(201).json({
+            message: `${role.toUpperCase()} account created for ${name}`,
+            user: {
+                id: result.auth._id,
+                name: result.auth.name,
+                email: result.auth.email,
+                role: result.auth.role,
+                linked_id: result.auth.linked_id
+            }
+        });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+/**
  * GET /auth/me — Get current user info (protected)
  */
 router.get('/me', verifyToken, async (req, res) => {

@@ -7,7 +7,7 @@ const router = express.Router();
 const queueService = require('../services/instance');
 
 // POST /service/schedule/:userId — Auto-assign to best staff
-router.post('/service/schedule/:userId', async (req, res) => {
+router.post('/schedule/:userId', async (req, res) => {
     try {
         const result = await queueService.scheduleUser(req.params.userId);
         res.json({
@@ -70,16 +70,7 @@ router.post('/reassign/:userId', async (req, res) => {
     }
 });
 
-// PATCH /users/:userId/status — Generic status update
-router.patch('/users/:userId/status', async (req, res) => {
-    try {
-        const { status } = req.body;
-        const user = await queueService.updateStatus(req.params.userId, status);
-        res.json({ message: `Status updated to ${status}`, user });
-    } catch (err) {
-        res.status(400).json({ error: err.message });
-    }
-});
+
 
 // POST /emergency/:userId — Emergency override (top of queue)
 router.post('/emergency/:userId', async (req, res) => {
@@ -96,6 +87,26 @@ router.get('/stats', async (_req, res) => {
     try {
         const stats = await queueService.getStats();
         res.json(stats);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST /service/assign-doctor/:userId/:staffId — Manual Assignment
+router.post('/assign-doctor/:userId/:staffId', async (req, res) => {
+    try {
+        const result = await queueService.assignDoctor(req.params.userId, req.params.staffId);
+        res.json({ message: 'Doctor assigned successfully', ...result });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+// POST /queue/optimize — Re-balance queue
+router.post('/queue/optimize', async (_req, res) => {
+    try {
+        const sorted = await queueService.optimizeQueue();
+        res.json({ message: 'Optimization success', queue_length: sorted.length });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

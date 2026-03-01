@@ -7,7 +7,8 @@ const router = express.Router();
 const queueService = require('../services/instance');
 
 // GET /staff — List all staff
-router.get('/staff', async (_req, res) => {
+// GET /staff — List all staff
+router.get('/', async (_req, res) => {
     try {
         const staff = await queueService.listAllStaff();
         res.json({ count: staff.length, staff });
@@ -17,7 +18,8 @@ router.get('/staff', async (_req, res) => {
 });
 
 // POST /staff — Add a staff member
-router.post('/staff', async (req, res) => {
+// POST /staff — Add a staff member
+router.post('/', async (req, res) => {
     try {
         const { name, start_time, end_time } = req.body;
         if (!name || !start_time || !end_time) {
@@ -37,6 +39,17 @@ router.get('/queue/status/:staffId', async (req, res) => {
         res.json(status);
     } catch (err) {
         res.status(404).json({ error: err.message });
+    }
+});
+
+// DELETE /staff/:id — Remove staff member
+// DELETE /staff/:id — Remove staff member
+router.delete('/:id', async (req, res) => {
+    try {
+        const result = await queueService.deleteStaff(req.params.id);
+        res.json(result);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
     }
 });
 

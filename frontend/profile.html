@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile — Smart Clinic</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f8fafc 100%);
+            min-height: 100vh;
+        }
+
+        .profile-wrapper {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 30px 20px 60px;
+        }
+
+        .profile-topbar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .back-btn {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+            transition: all 0.15s;
+        }
+
+        .back-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .profile-topbar h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .profile-avatar-section {
+            background: white;
+            border-radius: 18px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .avatar-wrap {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            border: 3px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin: 0 auto 16px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            position: relative;
+        }
+
+        .avatar-wrap:hover {
+            border-color: var(--accent);
+        }
+
+        .avatar-wrap .avatar-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: white;
+        }
+
+        .avatar-wrap:hover .avatar-overlay {
+            display: flex;
+        }
+
+        .avatar-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .avatar-id {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 18px;
+            padding: 28px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            margin-bottom: 20px;
+        }
+
+        .profile-card h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 6px;
+        }
+
+        .form-group textarea,
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+
+        .form-group textarea:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: white;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+        }
+
+        .save-btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, var(--accent), #2563eb);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(56, 189, 248, 0.3);
+        }
+
+        .save-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .history-save-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="profile-wrapper">
+        <div class="profile-topbar">
+            <a href="dashboard-patient.html" class="back-btn">← Dashboard</a>
+            <h1>My Profile</h1>
+        </div>
+
+        <!-- Avatar Section -->
+        <div class="profile-avatar-section">
+            <div class="avatar-wrap" onclick="document.getElementById('profile-image-input').click()">
+                <div id="profile-img-preview">
+                    <span style="font-size: 3rem;">👤</span>
+                </div>
+                <div class="avatar-overlay">📷</div>
+            </div>
+            <input type="file" id="profile-image-input" style="display:none;" accept="image/*"
+                onchange="previewImage(this)">
+            <div class="avatar-name" id="profile-name">—</div>
+            <div class="avatar-id">ID: <span id="profile-id-val">—</span></div>
+        </div>
+
+        <!-- Profile Description -->
+        <div class="profile-card">
+            <h2>✏️ About Me</h2>
+            <div class="form-group">
+                <label>Short Description</label>
+                <textarea id="profile-desc"
+                    placeholder="Tell us a bit about yourself, your concerns, or any relevant notes..."></textarea>
+            </div>
+            <button class="save-btn" id="btn-save-profile" onclick="saveProfile()">Save Profile</button>
+        </div>
+
+        <!-- Medical History -->
+        <div class="profile-card">
+            <h2>📋 Medical History</h2>
+            <div class="form-group">
+                <label>History, Allergies & Medications</label>
+                <textarea id="history-text" style="min-height: 140px;"
+                    placeholder="Describe your medical history, known allergies, current medications, or any conditions the doctor should know about..."></textarea>
+            </div>
+            <button class="save-btn history-save-btn" id="btn-save-history" onclick="saveHistory()">Save Medical
+                History</button>
+        </div>
+
+        <!-- File Uploads -->
+        <div class="profile-card">
+            <h2>📎 My Documents</h2>
+            <div class="drop-zone" id="drop-zone" style="padding: 20px; text-align: center; cursor: pointer;"
+                onclick="document.getElementById('file-input').click()">
+                <p>📁 Tap or drag to upload documents</p>
+                <input type="file" id="file-input" style="display: none;">
+            </div>
+            <div id="file-name-display" style="font-size:0.85rem; margin: 8px 0; color: var(--text-secondary);"></div>
+            <button class="save-btn" id="btn-upload" onclick="uploadFile(event)" disabled
+                style="margin-top: 8px; background: linear-gradient(135deg, #8b5cf6, #7c3aed);">Upload File</button>
+            <div id="user-files-list" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script src="auth.js"></script>
+    <script src="common.js"></script>
+    <script src="profile.js"></script>
+</body>
+
+</html>
