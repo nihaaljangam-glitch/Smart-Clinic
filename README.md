@@ -40,7 +40,7 @@ There is a need for a smarter system that dynamically manages patient queues in 
 
 6.Patients waiting for consultation
 
-# exissting gaps
+# existing gaps
 
 1.Most clinics follow static queue systems.
 
@@ -151,7 +151,7 @@ https://www.researchgate.net/publication/371131312/figure/fig1/AS%3A114312811625
 Synthetic Clinic Consultation Dataset
 
 # Source
-Hugging Face ,a kaggle,
+Hugging Face , kaggle,
 Data Type,
 Structured tabular dataset (CSV)
 
@@ -175,7 +175,6 @@ Feature engineering (arrival delay, doctor workload)
 
 # 7.⁠ ⁠Model Selected
 # Model Name
- Consultation Time Prediction
 
 Selection Reasoning
 
