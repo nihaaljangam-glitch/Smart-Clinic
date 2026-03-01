@@ -41,6 +41,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'smart-clinic-super-secret-key';
 const allowedOrigins = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    'http://localhost:5500',
+    'http://127.0.0.1:5500',
     'https://smart-clinic-bro0.onrender.com',
     /\.vercel\.app$/,   // any Vercel preview/prod deployment
 ];
