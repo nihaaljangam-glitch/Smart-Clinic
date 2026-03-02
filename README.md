@@ -205,3 +205,12 @@ PostgreSQL (structured clinic and queue data)
 
 Deployment
 Docker + Cloud hosting (AWS / Render / Railway)
+
+
+# Website Link
+https://smart-clinic-theta.vercel.app/
+
+# Website Demo
+https://drive.google.com/file/d/1DnTcf8r3tnt_VLUOWxl7G96VpBnt0wRz/view?usp=sharing
+# Website PPT
+https://drive.google.com/file/d/1FGFIFvRHlHN-qaW6UIWxUwdvoruiT8Yn/view?usp=drive_link
